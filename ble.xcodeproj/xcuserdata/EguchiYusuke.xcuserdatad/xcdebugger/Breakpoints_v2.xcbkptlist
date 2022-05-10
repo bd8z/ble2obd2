@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "C25F4FEF-811B-4EC1-8CC3-0406BF18567A"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AAE3892B-816D-4822-BA8E-A04825109414"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ble/bleApp.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "21"
+            endingLineNumber = "21"
+            landmarkName = "ContentView"
+            landmarkType = "14">
+            <Locations>
+               <Location
+                  uuid = "AAE3892B-816D-4822-BA8E-A04825109414 - cb7804669f210973"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ble.ContentView.init() -&gt; ble.ContentView"
+                  moduleName = "ble"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/EguchiYusuke/Desktop/ble/ble/bleApp.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "27"
+                  endingLineNumber = "27"
+                  offsetFromSymbolStart = "80">
+               </Location>
+               <Location
+                  uuid = "AAE3892B-816D-4822-BA8E-A04825109414 - 9cbaa193cec159fd"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "ble.ContentView.init(cbman: ble.Bluetooth) -&gt; ble.ContentView"
+                  moduleName = "ble"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/EguchiYusuke/Desktop/ble/ble/bleApp.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "27"
+                  endingLineNumber = "27"
+                  offsetFromSymbolStart = "56">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A59182D2-7263-47F4-9B75-115850DC2F24"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ble/modulePack.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "496"
+            endingLineNumber = "496"
+            landmarkName = "appendText(inputString:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
