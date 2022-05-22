@@ -17,6 +17,7 @@
 		E9EDA711280C055C00F4101C /* bleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EDA710280C055C00F4101C /* bleUITests.swift */; };
 		E9EDA713280C055C00F4101C /* bleUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EDA712280C055C00F4101C /* bleUITestsLaunchTests.swift */; };
 		E9EDA721280C057500F4101C /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9EDA720280C057500F4101C /* CoreBluetooth.framework */; };
+		E9EDEAFF2839184E00C828B5 /* obdLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EDEAFE2839184E00C828B5 /* obdLib.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		E9EDA710280C055C00F4101C /* bleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bleUITests.swift; sourceTree = "<group>"; };
 		E9EDA712280C055C00F4101C /* bleUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bleUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		E9EDA720280C057500F4101C /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		E9EDEAFE2839184E00C828B5 /* obdLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = obdLib.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +109,7 @@
 			children = (
 				E92A7EAE2818466B004E61A5 /* Info.plist */,
 				E9EDA6F0280C055800F4101C /* ContentView.swift */,
+				E9EDEAFE2839184E00C828B5 /* obdLib.swift */,
 				E9EDA6F2280C055800F4101C /* modulePack.swift */,
 				E9EDA6F4280C055C00F4101C /* Assets.xcassets */,
 				E9EDA6F6280C055C00F4101C /* Preview Content */,
@@ -281,6 +284,7 @@
 			files = (
 				E9EDA6F3280C055800F4101C /* modulePack.swift in Sources */,
 				E9EDA6F1280C055800F4101C /* ContentView.swift in Sources */,
+				E9EDEAFF2839184E00C828B5 /* obdLib.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,7 +372,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -423,7 +427,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -455,8 +459,10 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -492,8 +498,10 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

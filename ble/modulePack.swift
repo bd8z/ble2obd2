@@ -12,8 +12,6 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
     @Published var isPushed = false
     
     var CENTRAL:CBCentralManager?
-    var PERIPHERAL:CBPeripheral?
-    var CHARACTERISTICS:CBCharacteristic?
     @Published public var foundPeripheralNameArray:[foundPeripheral] = []
     @Published public var foundPeripheralArray:[CBPeripheral] = []
   
@@ -21,28 +19,31 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
     public var discoveredPeripheral: CBPeripheral?
     var writeCharacteristic: CBCharacteristic? = nil
     var readCharacteristic: CBCharacteristic? = nil
+
+    @Published public var responseMessage:String = "start"
+    @Published public var debugMessage:String = "debag Start"
+
+    
+    var isRecordingStarted = false
+    
+    
+    //
+    var wrimane = fileWriteManager.shared
+    var myloopTimer:Timer = Timer.init()
+    
+    var conncectedDeciveSetting:bleDeciveSetting?
+    
+    private let deviceList = deviceLibrary().deviceList
     public let timeInterval:Double = 0.005
     public var commandtext:[String] = ["010C","010D"] //if not selected
     public var stremaer = dataStream.shared
     public var writeTimeCounter:Int = 0
-    @Published public var responseMessage:String = "start"
-    @Published public var debugMessage:String = "debag Start"
-    @Published public var viewData1 = "0"
-    @Published public var viewData2 = "0"
     var writeCounter:Int64 = 0
-    var isRecordingStarted = false
-    
-    var wrimane = fileWriteManager.shared
-    var myloopTimer:Timer = Timer.init()
 
     //メンバ変数初期化 NSObject
     override init() {
         super.init()
         CENTRAL = CBCentralManager( delegate:self,queue:nil )
-        PERIPHERAL = nil
-        CHARACTERISTICS = nil
-        
-        print(111)
     }
 
     
@@ -60,9 +61,10 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
     func disconnectPeripheral() {
         if discoveredPeripheral != nil {
             CENTRAL?.cancelPeripheralConnection( discoveredPeripheral! )
-            PERIPHERAL = nil
+            discoveredPeripheral = nil
         }
-        CHARACTERISTICS = nil
+        readCharacteristic = nil
+        writeCharacteristic = nil
     }
     
     func startScan(){
@@ -85,42 +87,7 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
         stopScan()
     }
     
-    func startRecord(){
-        isRecordingStarted = true
-        recorButtonText = "Record Stop"
-        
-        if wrimane.isStarted == false{
-            wrimane.recordStart()
-        }
-        
-        writeCounter = 0
-        stremaer.writableFlag = true
-        
-        
-        
-        
-        // Once this is complete, we just need to wait for the data to come in.
-        let interval_func = { [self] (time:Timer) in
-            if stremaer.writableFlag == true{
-                print("Write! counter:" + String(writeCounter))
-                stremaer.writableFlag = false
-                self.writeFunction()
-                writeCounter = writeCounter + 1
-            }
-                
-            }
-        myloopTimer = Timer.scheduledTimer(withTimeInterval: timeInterval,
-                                           repeats: true,
-                                           block: interval_func)
-    }
-    
-    func stopRecord(){
-        myloopTimer.invalidate()
-        isRecordingStarted = false
-        wrimane.isStarted = false
-        recorButtonText = "Record Start"
 
-    }
     
     // discover peripheral
     func centralManager( _ central:CBCentralManager,didDiscover peripheral:CBPeripheral,
@@ -166,12 +133,19 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
             print("Error discovering services: %s", error.localizedDescription)
             return
         }
-        //180AがdeviceinfoのService。そうでないUUIDがwrite,notify用serviceであることを利用する
-        for service in peripheral.services! {
-            if (service.uuid.uuidString.isEqual("FFF0")) {
-                print(service.uuid.uuidString)
-                peripheral.discoverCharacteristics(nil, for:service)
-             }
+        
+        let result = deviceList.map({ (device) -> String in return device.deviceName})
+        if result.firstIndex(of: discoveredPeripheral!.name!)  != nil {
+            conncectedDeciveSetting = deviceList.filter { setting_ in
+                setting_.deviceName == discoveredPeripheral!.name
+            }[0]
+            
+            for service in peripheral.services! {
+                if (service.uuid.uuidString.isEqual(conncectedDeciveSetting!.serviceUUID)) {
+                    print(service.uuid.uuidString)
+                    peripheral.discoverCharacteristics(nil, for:service)
+                 }
+            }
         }
     }
     
@@ -183,14 +157,17 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
             print("Error discovering characteristics: %s", error.localizedDescription)
             return
         }
-        //wirteのpropertiesが各デバイスに共通して0xCであることを利用する
+                
+        
+        //Set Wirte and Read characteristic
         for characteristic in service.characteristics!{
-            if (String((characteristic.properties.rawValue), radix: 16)).isEqual("c"){
+            if (characteristic.uuid.uuidString == conncectedDeciveSetting?.writeUUID){
                 self.writeCharacteristic = characteristic
                 print("書き込み先")
                 print(characteristic)
             }
-            else{
+            
+            if (characteristic.uuid.uuidString == conncectedDeciveSetting?.readUUID){
                 self.readCharacteristic = characteristic
                 print("読み込み先`")
                 print(characteristic)
@@ -200,20 +177,29 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
     }
 
 
+
+    
+
+    
+
+}
+
+
+extension Bluetooth{
+    
     public func writeFunction(){
         let command_:String = commandtext[writeTimeCounter % commandtext.count]
 
             guard let data2 = (command_ + "\r").data(using: .utf8) else {
                 return
             }
-        discoveredPeripheral?.writeValue(data2, for: self.writeCharacteristic!, type: .withoutResponse)
+        discoveredPeripheral?.writeValue(data2, for: self.writeCharacteristic!, type: conncectedDeciveSetting!.writeType)
         writeTimeCounter += 1
     }
 
     func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
         //print("Peripheral is ready, send data")
     }
-
     
     public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard let value = characteristic.value, let callbackString = String(data: value, encoding: .utf8), !callbackString.isEmpty else {
@@ -224,8 +210,6 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
         print("<---tempString ",tmpString, " tempString--->")
         stremaer.dataAppend(tmpData: tmpString)
         responseMessage = stremaer.dataGet()
-        viewData1 = stremaer.dataGet1()
-        viewData2 = stremaer.dataGet2()
         debugMessage = stremaer.sendData
 
         // Deal with errors (if any)
@@ -234,8 +218,44 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
             return
         }
     }
-}
+    
+    func startRecord(){
+        isRecordingStarted = true
+        recorButtonText = "Record Stop"
+        
+        if wrimane.isStarted == false{
+            wrimane.recordStart()
+        }
+        
+        writeCounter = 0
+        stremaer.writableFlag = true
+        
+        
+        
+        
+        // Once this is complete, we just need to wait for the data to come in.
+        let interval_func = { [self] (time:Timer) in
+            if stremaer.writableFlag == true{
+                print("Write! counter:" + String(writeCounter))
+                stremaer.writableFlag = false
+                self.writeFunction()
+                writeCounter = writeCounter + 1
+            }
+                
+            }
+        myloopTimer = Timer.scheduledTimer(withTimeInterval: timeInterval,
+                                           repeats: true,
+                                           block: interval_func)
+    }
+    
+    func stopRecord(){
+        myloopTimer.invalidate()
+        isRecordingStarted = false
+        wrimane.isStarted = false
+        recorButtonText = "Record Start"
 
+    }
+}
 
 final public class dataStream{
     public var receivedData:String = ""
@@ -243,8 +263,6 @@ final public class dataStream{
     let dateFormatter = DateFormatter()
     var dateString:String = ""
     var sendData:String = ""
-    var viewData1 = "0"
-    var viewData2 = "0"
     public var writableFlag = true
     public var responceFirstMessage:String = ""
     var wrimane = fileWriteManager.shared
@@ -253,6 +271,8 @@ final public class dataStream{
     
     private init(){}
     public static let shared = dataStream()
+    
+    let errorMessageArray:[String] = deviceLibrary().errorMessageArray
 
     func dataAppend(tmpData:String){
         receivedData = receivedData + tmpData
@@ -285,10 +305,11 @@ final public class dataStream{
 
             responceFirstMessage = String(responce.split(separator: "/")[1])
             print(responceFirstMessage)
+
             
             
             //understand reply from obd and write file
-            if (responceFirstMessage == "STOPPED") || (responceFirstMessage == "NO DATA") || (responceFirstMessage == "CAN ERROR")||(sendData.count < 5) {
+            if errorMessageArray.firstIndex(of: responceFirstMessage)  != nil || (sendData.count < 5) {
                 print("detect no data")
                 writeData = (responce).split(separator: "/").joined(separator: ",")
             }
@@ -307,66 +328,6 @@ final public class dataStream{
     }
     func dataGet() -> String{
         return responce
-    }
-    
-    func dataGet1() -> String{
-        return viewData1
-    }
-    
-    func dataGet2() -> String{
-        return viewData2
-    }
-
-    //caseにする、共通処理にするためにCODEと実態に分離して下位アプリに流す
-    func obdCal(input:String)->String{
-        var caldValue:String = ""
-        let obdCode:String = String(String(input.split(separator: "/")[0]).suffix(2))
-        let tmp_:String = String(input.split(separator: "/")[input.split(separator: "/").count - 2])
-        let receivedData:String = String(tmp_.suffix(tmp_.count - 4))
-        if obdCode == "0C"{
-            print("engin")
-            let (A, B):(Int, Int) = twoByteRetrun(receivedData: receivedData)
-            caldValue = "eng/" + String(format:"%.2f",(A * 256 + B) / 4)
-            viewData1 = String(format:"%.2f",(A * 256 + B) / 4)
-        }
-        else if obdCode == "0D"{
-            print("Spd")
-            let A:Int = oneByteRetrun(receivedData: receivedData)
-            caldValue = "spd/" + String(A)
-            viewData2 = String(Int(receivedData.suffix(2), radix: 16)!)
-        }
-        else if obdCode == "5B"{
-            print("SOC")
-            let A:Int = oneByteRetrun(receivedData: receivedData)
-            caldValue = "soc/" + String(format:"%.2f",Double(A) * 100 / 255)
-        }
-        else{caldValue = input}
-        return caldValue
-    }
-    
-    func oneByteRetrun(receivedData:String) -> Int{
-        let valueA:Int = Int(receivedData.suffix(2), radix: 16)!
-        return valueA
-    }
-    
-    func twoByteRetrun(receivedData:String) -> (Int, Int){
-        let valueA:Int = Int(receivedData.prefix(2), radix: 16)!
-        let valueB:Int = Int(receivedData.suffix(2), radix: 16)!
-        return (valueA, valueB)
-    }
-    
-    func threeByteRetrun(receivedData:String) -> (Int, Int, Int){
-        let valueA:Int = Int(receivedData.prefix(2), radix: 16)!
-        let valueB:Int = Int(receivedData[receivedData.index(receivedData.startIndex, offsetBy: 2)..<receivedData.index(receivedData.startIndex, offsetBy:4)] , radix: 16)!
-        let valueC:Int = Int(receivedData.suffix(2), radix: 16)!
-        return (valueA, valueB, valueC)
-    }
-    func fourByteRetrun(receivedData:String) -> (Int, Int, Int, Int){
-        let valueA:Int = Int(receivedData.prefix(2), radix: 16)!
-        let valueB:Int = Int(receivedData[receivedData.index(receivedData.startIndex, offsetBy: 2)..<receivedData.index(receivedData.startIndex, offsetBy:4)] , radix: 16)!
-        let valueC:Int = Int(receivedData[receivedData.index(receivedData.startIndex, offsetBy: 4)..<receivedData.index(receivedData.startIndex, offsetBy:6)] , radix: 16)!
-        let valueD:Int = Int(receivedData.suffix(2), radix: 16)!
-        return (valueA, valueB, valueC, valueD)
     }
 
 }
@@ -511,3 +472,10 @@ final public class fileWriteManager{
     }
     
 }
+
+
+
+
+
+
+

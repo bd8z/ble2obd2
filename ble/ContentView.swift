@@ -16,8 +16,6 @@ struct bleApp: App {
     }
 }
 
-
-
 struct ContentView: View {
     @State private var editText = ""
     @ObservedObject public var cbman = Bluetooth()
@@ -29,6 +27,7 @@ struct ContentView: View {
     @State private var viewState:Int = 0
     @State private var signalStrength:Double = 0
     var buttonText:String = "Start Record"
+    let obdCodes = obdCodesLibrary().obdCodes
     @State private var selectedCodes = Set<UUID>()
     let dynamicColor = UIColor { (traitCollection: UITraitCollection) -> UIColor in
        if traitCollection.userInterfaceStyle == .dark {
@@ -39,14 +38,6 @@ struct ContentView: View {
    }
     
     
-    private var obdCodes = [
-        obdCodeStructure(code: "010C", name: "Engine speed", units: "rpm"),
-        obdCodeStructure(code: "010D", name: "Vehicle speed", units: "km/h"),
-        obdCodeStructure(code: "0111", name: "Throttle position", units: "%"),
-        obdCodeStructure(code: "0104", name: "Calculated engine load", units: "%"),
-        obdCodeStructure(code: "015B", name: "Hybrid battery pack remaining life", units: "%"),
-    ]
-
     
     var body: some View {
             
@@ -66,7 +57,7 @@ struct ContentView: View {
             {
                 Text(self.cbman.buttonText)
                     .padding()
-                    .frame(width: 170)
+                    .frame(width: 150)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.blue, lineWidth: 1))
@@ -74,6 +65,8 @@ struct ContentView: View {
         
         if viewState == 0{
             if cbman.isPushed {
+                
+                //ここで警告が出る多分Listの使い方がよくない
                 NavigationView{
                     List(cbman.foundPeripheralNameArray)
                     { singleitem in
@@ -172,8 +165,8 @@ struct ContentView: View {
                 Text("send to obdCal")
                 Text(cbman.debugMessage)
                 Spacer()
-                Text(cbman.viewData1 + " rpm").bold().font(.system(size: 24))
-                Text(cbman.viewData2 + "km/h").bold().font(.system(size: 24))
+                Text("0" + " rpm").bold().font(.system(size: 24))
+                Text("0" + "km/h").bold().font(.system(size: 24))
                 Spacer()
             }
             Group{
@@ -195,29 +188,52 @@ struct ContentView: View {
         }
         
         else if viewState == 2 {
-            Button(action: {
-                viewState  = 1
-                print("here")
-                let cft = obdCodes.map({ (st) -> String in
-                    return st.id.uuidString
+            HStack{
+                Button(action: {
+                    if cbman.isRecordingStarted == false{
+                        self.cbman.startRecord()
+                        location.start()
+                    }
+                    else if cbman.isRecordingStarted == true{
+                        self.cbman.stopRecord()
+                        location.stop()
+                        cbman.isRecordingStarted = false
+                    }
+
                 })
-                
-                var selectedObdCodeArray:[String] = []
-                for item in selectedCodes{
-                    let idx:Int = cft.firstIndex(of: item.uuidString) ?? 00
-                    selectedObdCodeArray.append(obdCodes[idx].code)
-                    cbman.commandtext = selectedObdCodeArray
+                {
+                    Text(cbman.recorButtonText)
+                        .padding()
+                        .frame(width: 150)
+                        .foregroundColor(Color(.red))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.red, lineWidth: 1))
                 }
-            })
-            {
-                Text("Finish Setting")
-                    .padding()
-                    .frame(width: 170)
-                    .foregroundColor(Color(dynamicColor))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(dynamicColor), lineWidth: 1))
-            }
+                Button(action: {
+                    viewState  = 1
+                    print("here")
+                    let cft = obdCodes.map({ (st) -> String in
+                        return st.id.uuidString
+                    })
+                    
+                    var selectedObdCodeArray:[String] = []
+                    for item in selectedCodes{
+                        let idx:Int = cft.firstIndex(of: item.uuidString) ?? 00
+                        selectedObdCodeArray.append(obdCodes[idx].code)
+                        cbman.commandtext = selectedObdCodeArray
+                    }
+                })
+                {
+                    Text("Finish Setting")
+                        .padding()
+                        .frame(width: 150)
+                        .foregroundColor(Color(dynamicColor))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(dynamicColor), lineWidth: 1))
+                }
+        }
             
             NavigationView {
                     List(selection: $selectedCodes) {
@@ -229,34 +245,22 @@ struct ContentView: View {
                     .toolbar { EditButton() }
                 }
             }
-            
-        
-    
     }
 }
 
 
-struct foundPeripheral: Identifiable {
-    let id = UUID()
-    let name: String
-    let identifier: String
-    let signalLevel: String
-}
 
-struct obdCodeStructure: Identifiable {
-    let id = UUID()
-    let code: String
-    let name: String
-    let units: String
-}
 
 struct obdCodeListView: View {
     var obdCodeStructure: obdCodeStructure
     var body: some View {
         VStack(alignment: .leading){
-            Text("name:" + obdCodeStructure.name)
-            Text("code:" + obdCodeStructure.code)
-            Text("units:" + obdCodeStructure.units)
+            Text("name: " + obdCodeStructure.name)
+            Text("code: " + obdCodeStructure.code)
+            Text("units: " + obdCodeStructure.units)
         }
     }
 }
+
+
+
