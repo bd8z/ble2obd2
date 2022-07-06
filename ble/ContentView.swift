@@ -2,8 +2,6 @@
 //  bleApp.swift
 //  ble
 //
-//  Created by 江口由祐 on 2022/04/17.
-//
 
 import SwiftUI
 
@@ -36,7 +34,6 @@ struct ContentView: View {
            return .black
        }
    }
-    
     
     
     var body: some View {

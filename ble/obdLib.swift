@@ -2,7 +2,6 @@
 //  obdLib.swift
 //  ble
 //
-//  Created by 江口由祐 on 2022/05/21.
 //
 
 import Foundation
@@ -13,7 +12,7 @@ struct deviceLibrary{
     let deviceList:[bleDeciveSetting] = [
         bleDeciveSetting(deviceName: "OBDII", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withoutResponse),
         bleDeciveSetting(deviceName: "OBDBLE", serviceUUID: "FFE0", writeUUID: "FFE1", readUUID: "FFE1", writeType: .withResponse),
-        bleDeciveSetting(deviceName: "OBDBLE", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withResponse),
+        bleDeciveSetting(deviceName: "OBDBLE", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withoutResponse),
         bleDeciveSetting(deviceName: "Viecar", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withoutResponse)
     ]
     let errorMessageArray:[String] = ["STOPPED", "SEARCHING...", "SEARCHING...","NO DATA", "CAN ERROR"]
