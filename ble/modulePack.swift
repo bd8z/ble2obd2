@@ -25,13 +25,11 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
 
     
     var isRecordingStarted = false
-    
-    
-    //
     var wrimane = fileWriteManager.shared
     var myloopTimer:Timer = Timer.init()
     
     var conncectedDeciveSetting:bleDeciveSetting?
+    var deviceNameArray:[String] = []
     
     private let deviceList = deviceLibrary().deviceList
     public let timeInterval:Double = 0.005
@@ -134,19 +132,12 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
             return
         }
         
-        let result = deviceList.map({ (device) -> String in return device.deviceName})
-        if result.firstIndex(of: discoveredPeripheral!.name!)  != nil {
-            conncectedDeciveSetting = deviceList.filter { setting_ in
-                setting_.deviceName == discoveredPeripheral!.name
-            }[0]
-            
-            for service in peripheral.services! {
-                if (service.uuid.uuidString.isEqual(conncectedDeciveSetting!.serviceUUID)) {
-                    print(service.uuid.uuidString)
-                    peripheral.discoverCharacteristics(nil, for:service)
-                 }
-            }
+        print("start")
+        for service in peripheral.services! {
+            print(service)
+            peripheral.discoverCharacteristics(nil, for: service)
         }
+        print("end")
     }
     
     // discover characteristics
@@ -157,31 +148,36 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
             print("Error discovering characteristics: %s", error.localizedDescription)
             return
         }
-                
         
+        
+        let tmpCharaArray = service.characteristics!.map({ st -> String in return st.uuid.uuidString})
+        let foundSrv = foundService(serviceUUID: service.uuid.uuidString, characteristicUUID: tmpCharaArray)
         //Set Wirte and Read characteristic
-        for characteristic in service.characteristics!{
-            if (characteristic.uuid.uuidString == conncectedDeciveSetting?.writeUUID){
-                self.writeCharacteristic = characteristic
-                print("書き込み先")
-                print(characteristic)
-            }
-            
-            if (characteristic.uuid.uuidString == conncectedDeciveSetting?.readUUID){
-                self.readCharacteristic = characteristic
-                print("読み込み先`")
-                print(characteristic)
-                discoveredPeripheral?.setNotifyValue(true, for: characteristic)
+        for device in deviceList{
+            if discoveredPeripheral!.name == device.deviceName{
+                if (foundSrv.characteristicUUID.contains(device.readUUID) && foundSrv.characteristicUUID.contains(device.writeUUID)){
+                    print("setOK")
+                    print(device)
+                    conncectedDeciveSetting = device
+                    for characteristic in service.characteristics!{
+                        if (characteristic.uuid.uuidString == conncectedDeciveSetting?.writeUUID){
+                            self.writeCharacteristic = characteristic
+                            print("書き込み先")
+                            print(characteristic)
+                        }
+                        
+                        if (characteristic.uuid.uuidString == conncectedDeciveSetting?.readUUID){
+                            self.readCharacteristic = characteristic
+                            print("読み込み先`")
+                            print(characteristic)
+                            discoveredPeripheral?.setNotifyValue(true, for: characteristic)
+                        }
+                    }
+                    break
+                }
             }
         }
     }
-
-
-
-    
-
-    
-
 }
 
 
@@ -252,6 +248,7 @@ extension Bluetooth{
         myloopTimer.invalidate()
         isRecordingStarted = false
         wrimane.isStarted = false
+        stremaer.resetBuffer()
         recorButtonText = "Record Start"
 
     }
@@ -302,11 +299,13 @@ final public class dataStream{
             //prepalation for obdCal function
             sendData = responce.replacingOccurrences(of: " ", with: "").split(separator: "/").joined(separator: "/")
             print("<--sendData generation:" + sendData)
-
-            responceFirstMessage = String(responce.split(separator: "/")[1])
-            print(responceFirstMessage)
-
             
+            let tmpResponceFirstMessage = responce.split(separator: "/")
+            if tmpResponceFirstMessage.count > 1{
+                responceFirstMessage = String(tmpResponceFirstMessage[1])
+                print(responceFirstMessage)
+
+            }
             
             //understand reply from obd and write file
             if errorMessageArray.firstIndex(of: responceFirstMessage)  != nil || (sendData.count < 5) {
@@ -328,6 +327,15 @@ final public class dataStream{
     }
     func dataGet() -> String{
         return responce
+    }
+    
+    func resetBuffer(){
+        responce = ""
+        receivedData = ""
+        dataSendFlg = false
+        writableFlag = true
+        writeData = ""
+        responceFirstMessage = ""
     }
 
 }

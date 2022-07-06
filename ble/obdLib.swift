@@ -13,9 +13,16 @@ struct deviceLibrary{
     let deviceList:[bleDeciveSetting] = [
         bleDeciveSetting(deviceName: "OBDII", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withoutResponse),
         bleDeciveSetting(deviceName: "OBDBLE", serviceUUID: "FFE0", writeUUID: "FFE1", readUUID: "FFE1", writeType: .withResponse),
+        bleDeciveSetting(deviceName: "OBDBLE", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withResponse),
         bleDeciveSetting(deviceName: "Viecar", serviceUUID: "FFF0", writeUUID: "FFF2", readUUID: "FFF1", writeType: .withoutResponse)
     ]
     let errorMessageArray:[String] = ["STOPPED", "SEARCHING...", "SEARCHING...","NO DATA", "CAN ERROR"]
+}
+
+struct foundService:Identifiable{
+    let id = UUID()
+    let serviceUUID: String
+    let characteristicUUID: [String]
 }
 
 struct foundPeripheral: Identifiable {
