@@ -37,6 +37,9 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
     public var stremaer = dataStream.shared
     public var writeTimeCounter:Int = 0
     var writeCounter:Int64 = 0
+    
+    @Published var avalabilityOfPeripheral:Bool = false
+    @Published var didScanComplete:Bool = false
 
     //メンバ変数初期化 NSObject
     override init() {
@@ -120,6 +123,7 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
     
     // disconnect peripheral RESULT
     func centralManager( _ central:CBCentralManager,didDisconnectPeripheral peripheral:CBPeripheral,error:Error? ) {
+        avalabilityOfPeripheral = false
         print("didDisconnectPeripheral")
         self.buttonText = "Scan Restart"
     }
@@ -132,18 +136,16 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
             return
         }
         
-        print("start")
         for service in peripheral.services! {
-            print(service)
             peripheral.discoverCharacteristics(nil, for: service)
         }
-        print("end")
     }
     
     // discover characteristics
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         // Deal with errors (if any).
         //print(service.characteristics!)
+        
         if let error = error {
             print("Error discovering characteristics: %s", error.localizedDescription)
             return
@@ -158,6 +160,7 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
                 if (foundSrv.characteristicUUID.contains(device.readUUID) && foundSrv.characteristicUUID.contains(device.writeUUID)){
                     print("setOK")
                     print(device)
+                    avalabilityOfPeripheral = true
                     conncectedDeciveSetting = device
                     for characteristic in service.characteristics!{
                         if (characteristic.uuid.uuidString == conncectedDeciveSetting?.writeUUID){
@@ -173,6 +176,8 @@ final class Bluetooth: NSObject, ObservableObject, CBCentralManagerDelegate, CBP
                             discoveredPeripheral?.setNotifyValue(true, for: characteristic)
                         }
                     }
+                    
+                    didScanComplete = true
                     break
                 }
             }
@@ -465,8 +470,6 @@ final public class fileWriteManager{
     func appendText(inputString: String) {
         let now = Date()
         let timeStamp:String = String(now.timeIntervalSince1970) + ","
- 
-        
         do {
             let fileHandle = try FileHandle(forWritingTo: URL(string:filepath)!)
             // 改行を入れる

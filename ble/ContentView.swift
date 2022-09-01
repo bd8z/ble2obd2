@@ -37,10 +37,8 @@ struct ContentView: View {
     
     
     var body: some View {
-            
             Text("OBD BLE Scan Tool")
             Button(action: {
-                
                 if viewState == 0{
                     self.cbman.startScan()
                 }
@@ -49,7 +47,6 @@ struct ContentView: View {
                     location.stop()
                     viewState = 0
                 }
-
             })
             {
                 Text(self.cbman.buttonText)
@@ -62,7 +59,6 @@ struct ContentView: View {
         
         if viewState == 0{
             if cbman.isPushed {
-                
                 //ここで警告が出る多分Listの使い方がよくない
                 NavigationView{
                     List(cbman.foundPeripheralNameArray)
@@ -71,20 +67,23 @@ struct ContentView: View {
                             self.showingAlert = true
                             self.selectedItem = singleitem.name
                             self.selectedItemUUID = singleitem.identifier
-                            
                         }, label: {
                             VStack(alignment: .leading){
                                 Text(singleitem.name).bold().font(.system(size: 24)).foregroundColor(Color(dynamicColor))
                                 Text(singleitem.identifier)
-                                HStack{Text("lv: " + singleitem.signalLevel)
+                                HStack{
+                                        Image(systemName: "wifi")
+                                        Text("lv: " + singleitem.signalLevel)
+
                                 Rectangle()
                                   .fill(Color.blue)
-                                  .frame(width: CGFloat(Double(130 + min(0,Double(singleitem.signalLevel)!))*2 ), height: 5.0)
+                                  .frame(width: CGFloat(Double(110 + min(0,Double(singleitem.signalLevel)!))*2 ), height: 5.0)
                                 }
 
                             }
                         }).alert("Confirm", isPresented: $showingAlert, actions: {
-                            Button {cbman.connectePeripheral(conncetUUID: selectedItemUUID)
+                            Button {
+                                cbman.connectePeripheral(conncetUUID: selectedItemUUID)
                                 viewState = 1
                             }label:{
                                 Text("Connect to device").fontWeight(.bold)
@@ -93,20 +92,24 @@ struct ContentView: View {
                           }, message: {
                               Text("Are you sure to conncet to " + selectedItem + "?")
                           })
-                        .navigationBarTitle(Text("BLE Device List"))
+                        .navigationBarHidden(true)
                     }
-                }
+                }.navigationViewStyle(StackNavigationViewStyle())
             }
             
         }
         else if viewState == 1{
-
-            
             HStack{
                 Button(action: {
                     if cbman.isRecordingStarted == false{
-                        self.cbman.startRecord()
-                        location.start()
+                        if cbman.avalabilityOfPeripheral == true{
+                            self.cbman.startRecord()
+                            location.start()
+                        }
+                        else{
+                            print("非対応デバイスです！")
+                        }
+                            
                     }
                     else if cbman.isRecordingStarted == true{
                         self.cbman.stopRecord()
@@ -119,11 +122,11 @@ struct ContentView: View {
                     Text(cbman.recorButtonText)
                         .padding()
                         .frame(width: 150)
-                        .foregroundColor(Color(.red))
+                        .foregroundColor(Color(((cbman.didScanComplete) ? .red : .gray)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.red, lineWidth: 1))
-                }
+                                .stroke(((cbman.didScanComplete) ? .red : .gray), lineWidth: 1))
+                }.disabled(!cbman.didScanComplete)
                 
                 Button(action: {
                     viewState  = 2
@@ -132,56 +135,76 @@ struct ContentView: View {
                     Text("Setting")
                         .padding()
                         .frame(width: 150)
-                        .foregroundColor(Color(dynamicColor))
+                        .foregroundColor(Color(((cbman.didScanComplete) ? (dynamicColor) : .gray)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color(dynamicColor), lineWidth: 1))
-                }
+                                .stroke(((cbman.didScanComplete) ? Color(dynamicColor) : .gray), lineWidth: 1))
+                }.disabled(!cbman.didScanComplete)
             }
             Spacer()
-            Group{
-                HStack{
-                    Text("Read")
-                    Text((cbman.readCharacteristic?.uuid.uuidString) ?? "None")
-                    Text("0x" + String(format: "%02x",cbman.readCharacteristic?.properties.rawValue ?? 0))
+            
+            if (cbman.didScanComplete == true){
+                Group{
+                    Group{
+                        HStack{
+                            Text("Read")
+                            Text((cbman.readCharacteristic?.uuid.uuidString) ?? "None")
+                            Text("0x" + String(format: "%02x",cbman.readCharacteristic?.properties.rawValue ?? 0))
+                        }
+                        HStack{
+                            Text("Write")
+                            Text((cbman.writeCharacteristic?.uuid.uuidString) ?? "None")
+                            Text("0x" + String(format: "%02x",cbman.writeCharacteristic?.properties.rawValue ?? 0))
+
+                        }
+                        Spacer()
+
+
+                    }
+                    Group{
+                        Text("responseMessage")
+                        Text(cbman.responseMessage)
+                        Spacer()
+                        Text("send to obdCal")
+                        Text(cbman.debugMessage)
+                        Spacer()
+                        Text("0" + " rpm").bold().font(.system(size: 24))
+                        Text("0" + "km/h").bold().font(.system(size: 24))
+                        Spacer()
+                    }
+                    Group{
+                        Text(location.spd + " km/h").bold().font(.system(size: 24))
+                        Text(location.spdAcc + "km/h").bold().font(.system(size: 24))
+                        Spacer()
+                    }
+                    Group{
+                        Text("GPS location")
+                        Text("lat: "+location.lat)
+                        Text("lon: "+location.lon)
+                        Text("elv: "+location.elv+"m")
+                        Spacer()
+                        Text("Accuracy")
+                        Text("holizontal: "+location.AccH+"m")
+                        Text("vertical: "+location.AccV+"m")
+                        Spacer()
+                    }
                 }
-                HStack{
-                    Text("Write")
-                    Text((cbman.writeCharacteristic?.uuid.uuidString) ?? "None")
-                    Text("0x" + String(format: "%02x",cbman.writeCharacteristic?.properties.rawValue ?? 0))
 
+            }
+            else{
+                Group{
+                    Image(systemName: "exclamationmark.circle").font(.title)
+                    Text("非対応BLEデバイスです。")
+                    Text("別のデバイスをお試しください。")
+                    Spacer()
+                    Text(selectedItem)
+                    Text(selectedItemUUID)
+                    Spacer()
                 }
-                Spacer()
+            }
 
-
-            }
-            Group{
-                Text("responseMessage")
-                Text(cbman.responseMessage)
-                Spacer()
-                Text("send to obdCal")
-                Text(cbman.debugMessage)
-                Spacer()
-                Text("0" + " rpm").bold().font(.system(size: 24))
-                Text("0" + "km/h").bold().font(.system(size: 24))
-                Spacer()
-            }
-            Group{
-                Text(location.spd + " km/h").bold().font(.system(size: 24))
-                Text(location.spdAcc + "km/h").bold().font(.system(size: 24))
-                Spacer()
-            }
-            Group{
-                Text("GPS location")
-                Text("lat: "+location.lat)
-                Text("lon: "+location.lon)
-                Text("elv: "+location.elv+"m")
-                Spacer()
-                Text("Accuracy")
-                Text("holizontal: "+location.AccH+"m")
-                Text("vertical: "+location.AccV+"m")
-                Spacer()
-            }
+            
+            
         }
         
         else if viewState == 2 {
@@ -196,7 +219,6 @@ struct ContentView: View {
                         location.stop()
                         cbman.isRecordingStarted = false
                     }
-
                 })
                 {
                     Text(cbman.recorButtonText)
@@ -240,7 +262,7 @@ struct ContentView: View {
                     }
                     .navigationTitle("Select Code")
                     .toolbar { EditButton() }
-                }
+                }.navigationViewStyle(StackNavigationViewStyle())
             }
     }
 }

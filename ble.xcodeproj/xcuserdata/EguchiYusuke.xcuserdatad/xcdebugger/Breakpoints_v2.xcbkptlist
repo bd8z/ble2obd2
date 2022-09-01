@@ -62,8 +62,8 @@
             filePath = "ble/modulePack.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "465"
-            endingLineNumber = "465"
+            startingLineNumber = "470"
+            endingLineNumber = "470"
             landmarkName = "appendText(inputString:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -71,16 +71,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "782703B7-E0B8-4193-AF01-8F0B96BBF02B"
+            uuid = "0E728B1A-148A-4CAD-BB44-840755EBD993"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "ble/modulePack.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "108"
-            endingLineNumber = "108"
-            landmarkName = "centralManager(_:didConnect:)"
+            startingLineNumber = "471"
+            endingLineNumber = "471"
+            landmarkName = "appendText(inputString:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
