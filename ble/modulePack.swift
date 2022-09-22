@@ -377,7 +377,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
         self.manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation //highest possible accuracy
         self.manager.distanceFilter = 0 //filetr
         self.manager.pausesLocationUpdatesAutomatically = true //ポーズしても位置取得を続ける
-        
+        self.manager.activityType = .automotiveNavigation
         
         //compass
         self.manager.headingFilter = kCLHeadingFilterNone

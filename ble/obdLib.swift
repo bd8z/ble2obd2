@@ -60,6 +60,12 @@ struct obdCodesLibrary{
         obdCodeStructure(code: "0902", name: "VIN", units: "-"),
         obdCodeStructure(code: "0151", name: "Fuel Type", units: "-"),
         obdCodeStructure(code: "019A", name: "Hybrid/EV Vehicle System Data, Battery, Voltage", units: "V"),
+        obdCodeStructure(code: "012F", name: "Fuel TankLevel Input", units: "%"),
+        obdCodeStructure(code: "0151", name: "Fuel Type", units: "-"),
+        obdCodeStructure(code: "015E", name: "Engine fuel rate", units: "L/h"),
+        obdCodeStructure(code: "019D", name: "Engine Fuel Rate", units: "g/s"),
+        obdCodeStructure(code: "019F", name: "Fuel System Persentage Use", units: "-"),
+        obdCodeStructure(code: "01A2", name: "Cylinder Fuel Rate", units: "mg/Stroke")
     ]
     
 }
